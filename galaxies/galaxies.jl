@@ -46,10 +46,9 @@ end
 function simulate(iterations)
     sun = Particle(Point(0., 0., 0.), Point(0., 0., 0.), 1.9f30)
     earth = Particle(Point(-15f10, 0., 0.), Point(0., 29_000, 0), 5.9f24)
-    all_parts = [sun, earth]
-    earth_posis = []
+    px = Particle(Point(15f10, 0., 0), Point(0, -29_000, 0), 5.9f24)
+    all_parts = [sun, earth, px]
     all_posis = [[] for _ in 1:length(all_parts)]
-    println(all_posis)
     for i in 1:iterations
         for (i, a) in enumerate(all_parts)
             push!(all_posis[i], a.posi)
@@ -58,7 +57,6 @@ function simulate(iterations)
     end
 
     all_posis
-    # "yo"
 end
 
 
@@ -68,13 +66,14 @@ function animate(posis, frames)
     ax = Axis3(fig[1, 1], aspect = (1, 1, 1),
     limits = (-10f11/4, 10f11/4, -10f11/4, 10f11/4, -10f11/4, 10f11/4,))
 
-    sun = Point(0, 0, 0)
-    earth = posis[1]
-    planets = Node([sun, earth])
+    start_posis = [i[1] for i in posis]
+    planets = Node(start_posis)
 
-    scatter!(planets, color=:white, markersize=5000)
+    scatter!(planets, color=:white, markersize=5000, colormap= :bluesreds)
     record(fig, "movie.gif", 1:frames, framerate = 30) do frame
-        planets[][2] = posis[Int(frame)]
+        for planet_idx in 1:length(posis)
+            start_posis[Int(planet_idx)] = posis[Int(planet_idx)][Int(frame)]
+        end
         notify(planets)
     end
 end
@@ -82,9 +81,9 @@ end
 
 function tester(frames, skip)
     println("simulating...")
-    hists = simulate(frames)[1]
+    hists = simulate(frames)
     println("rendering...")
-    animate(hists[1:skip:frames], frames/skip)
+    animate(hists, frames/skip)
 end
 
 
