@@ -69,7 +69,7 @@ function animate(posis, frames)
     start_posis = [i[1] for i in posis]
     planets = Node(start_posis)
 
-    scatter!(planets, color=:white, markersize=5000, colormap= :bluesreds)
+    scatter!(planets, color=:white, markersize=5000)
     record(fig, "movie.gif", 1:frames, framerate = 30) do frame
         for planet_idx in 1:length(posis)
             start_posis[Int(planet_idx)] = posis[Int(planet_idx)][Int(frame)]
