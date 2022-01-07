@@ -33,12 +33,12 @@ end
 
 
 function step!(all_particles)
-    dt = 1
+    dt = 100000
     for p in all_particles
         update_velocitiy!(p, all_particles, dt)
     end
     for p in all_particles
-        p.posi += p.velocity
+        p.posi += p.velocity * dt
     end
 end
 
