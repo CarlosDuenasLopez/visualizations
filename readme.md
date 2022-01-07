@@ -14,3 +14,11 @@ Spheres along a sphere being attracted to random points on the sphere, using New
 Example:
 
 ![spheres](spheres/example.gif)
+
+
+## Galaxies
+Simulations of planets / galaxies. Work in progress.
+
+Example:
+
+![galaxies](galaxies/example.gif)
