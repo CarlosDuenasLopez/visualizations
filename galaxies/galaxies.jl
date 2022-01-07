@@ -48,13 +48,16 @@ function simulate(iterations)
     earth = Particle(Point(-15f10, 0., 0.), Point(0., 29_000, 0), 5.9f24)
     all_parts = [sun, earth]
     earth_posis = []
-
+    all_posis = [[] for _ in 1:length(all_parts)]
+    println(all_posis)
     for i in 1:iterations
-        push!(earth_posis, earth.posi)
+        for (i, a) in enumerate(all_parts)
+            push!(all_posis[i], a.posi)
+        end
         step!(all_parts)
     end
 
-    earth_posis
+    all_posis
     # "yo"
 end
 
@@ -79,7 +82,7 @@ end
 
 function tester(frames, skip)
     println("simulating...")
-    hists = simulate(frames)
+    hists = simulate(frames)[1]
     println("rendering...")
     animate(hists[1:skip:frames], frames/skip)
 end
