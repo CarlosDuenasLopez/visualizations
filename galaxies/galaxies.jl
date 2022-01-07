@@ -8,13 +8,20 @@ mutable struct Particle
     mass::BigFloat
 end
 
+
+function calc_f(particle, other)
+    G = 6.67408f-11
+    r = dist(particle, other)
+    F = G * (particle.mass * other.mass) / r^2
+    return F
+end
+
 function update_velocitiy!(particle, all_particles, dt)
     a_vec = [0, 0, 0]
     G = 6.67408f-11
     for other in all_particles
         if other != particle
-            r = dist(particle, other)
-            F = G * (particle.mass * other.mass) / r^2
+            F = calc_f(particle, other)
             a = F / particle.mass
             connection_vector =  other.posi - particle.posi
             normed = connection_vector ./ norm(connection_vector)
@@ -26,30 +33,19 @@ end
 
 
 function step!(all_particles)
-    dt = 10f3
-    posis = []
+    dt = 1
     for p in all_particles
         update_velocitiy!(p, all_particles, dt)
     end
     for p in all_particles
         p.posi += p.velocity
-        push!(posis, p.posi)
     end
-    posis
-end
-
-
-function new_test()
-    sun = Particle(Point(0, 0, 0), Point(0, 0, 0), big(1.98847f30))
-    earth = Particle(Point(1.495978707f11, 0, 0), Point(0, 0, 0), big(5.9722f24))
-    all_planets = [sun, earth]
-    step!(all_planets)
 end
 
 
 function simulate(iterations)
     sun = Particle(Point(0., 0., 0.), Point(0., 0., 0.), 1.9f30)
-    earth = Particle(Point(15f10, 0., 0.), Point(0., 0, 0), 5.9f24)
+    earth = Particle(Point(-15f10, 0., 0.), Point(0., 29_000, 0), 5.9f24)
     all_parts = [sun, earth]
     earth_posis = []
 
@@ -59,6 +55,7 @@ function simulate(iterations)
     end
 
     earth_posis
+    # "yo"
 end
 
 
@@ -73,8 +70,6 @@ function animate(posis, frames)
     planets = Node([sun, earth])
 
     scatter!(planets, color=:white, markersize=5000)
-    current_figure()
-    println(length(posis))
     record(fig, "movie.gif", 1:frames, framerate = 30) do frame
         planets[][2] = posis[Int(frame)]
         notify(planets)
@@ -82,11 +77,11 @@ function animate(posis, frames)
 end
 
 
-function tester(frames)
+function tester(frames, skip)
     println("simulating...")
     hists = simulate(frames)
     println("rendering...")
-    animate(hists[1:1000:frames], frames/1000)
+    animate(hists[1:skip:frames], frames/skip)
 end
 
 
