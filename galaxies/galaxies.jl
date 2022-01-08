@@ -46,8 +46,11 @@ end
 function simulate(iterations)
     sun = Particle(Point(0., 0., 0.), Point(0., 0., 0.), 1.9f30)
     earth = Particle(Point(-15f10, 0., 0.), Point(0., 29_000, 0), 5.9f24)
-    px = Particle(Point(15f10, 0., 0), Point(0, -29_000, 0), 5.9f24)
-    all_parts = [sun, earth, px]
+    mercury = Particle(Point(-5.7f10, 0, 0), Point(0, 47_400, 0), 0.33f24)
+    venus = Particle(Point(-10.8f10, 0, 0), Point(0, 35_000, 0), 4.87f24)
+    mars = Particle(Point(-22.7f10, 0, 0), Point(0, 24_000, 0), 0.642f24)
+    jupiter = Particle(Point(-77.8f10, 0, 0), Point(0, 13_000, 0), 1898f24)
+    all_parts = [sun, earth, mercury, venus, mars, jupiter]
     all_posis = [[] for _ in 1:length(all_parts)]
     for i in 1:iterations
         for (i, a) in enumerate(all_parts)
@@ -64,13 +67,13 @@ function animate(posis, frames)
     set_theme!(theme_black())
     fig = Figure(resolution = (1000, 1000))
     ax = Axis3(fig[1, 1], aspect = (1, 1, 1),
-    limits = (-10f11/4, 10f11/4, -10f11/4, 10f11/4, -10f11/4, 10f11/4,))
+    limits = (-10f12/9.9, 10f12/9.9, -10f12/9.9, 10f12/9.9, -10f12/9.9, 10f12/9.9,))
 
     start_posis = [i[1] for i in posis]
     planets = Node(start_posis)
-
-    scatter!(planets, color=:white, markersize=5000)
-    record(fig, "movie.gif", 1:frames, framerate = 30) do frame
+    colors = [:yellow, :blue, :white, :red, :orange, :purple]
+    scatter!(planets, color=colors, markersize=5000)
+    record(fig, "example.gif", 1:frames, framerate = 50) do frame
         for planet_idx in 1:length(posis)
             start_posis[Int(planet_idx)] = posis[Int(planet_idx)][Int(frame)]
         end
