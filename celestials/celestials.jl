@@ -5,12 +5,13 @@ using DataStructures:CircularBuffer
 
 mutable struct Body
     posi::Point
-    velocity::Vector{Float64}
+    velocity::Vector{Float32}
     mass::BigFloat
+    size::Float32
 end
 dist(p1, p2) = √sum((p2.posi-p1.posi) .^ 2)
 
-function gen_bodies(num, radius, avg_mass, mass_deviation, speed=0.1)
+function gen_bodies(num, radius, avg_mass, mass_deviation, speed=0.3)
     # Generate num bodies in circular shape with velocities in direction perpendicular to circle center.
     bodies = Body[]
     for _ in 1:num
@@ -18,27 +19,27 @@ function gen_bodies(num, radius, avg_mass, mass_deviation, speed=0.1)
         dist = rand(1:radius*100) / 100
         x = cosd(my_angle) * dist
         y = sind(my_angle) * dist
-        z = 0
-        velocity = [-y, x, z]
-        velocity = velocity / norm(velocity) * speed
-        velocity = [0, 0, 0]
+        z = rand(-1:0.01:1)
+        velocity = [-y, x, z] ./ 10
+        # velocity = velocity / norm(velocity) * speed
         mass = rand(avg_mass-mass_deviation:avg_mass+mass_deviation)
-        push!(bodies, Body(Point(x, y, z), velocity, mass))
+        push!(bodies, Body(Point(x, y, z), velocity, mass, 2))
     end
     bodies
 end
 
-RADIUS, MASS, MASS_DEV = 3, 10e7, 0
+RADIUS, MASS, MASS_DEV = 3, 20e8, 0
 
-bodies = gen_bodies(2, RADIUS, MASS, MASS_DEV)
+bodies = gen_bodies(100, RADIUS, MASS, MASS_DEV)
+# push!(bodies, Body(Point(0, 0, 0), [0, 0, 0], 20e16, 0.001))
 starts = [b.posi for b in bodies]
-start_velocity = [0, 0, 0]
+start_velocities = [b.velocity for b in bodies]
 posis = Observable([b.posi for b in bodies])
 num_bodies = Observable(1000)
 mass = Observable(BigFloat(1))
 dt = Observable(0.001)
 body_obs = Observable(Body[])
-distance = Observable([dist(Body(Point(0, 0, 0), [0, 0, 0], 0), bodies[1])])
+distance = Observable([dist(Body(Point(0, 0, 0), [0, 0, 0], 0, 0), bodies[1])])
 speed = Observable(CircularBuffer{Float64}(1000))
 fill!(speed[], 0.0)
 
@@ -47,7 +48,7 @@ on(num_bodies) do num
     global posis[] = [b.posi for b in bodies]
     global starts = posis[]
     for (i, b) in enumerate(bodies)
-        b.velocity = start_velocity
+        b.velocity = start_velocities[i]
     end
     println("Now there are $num bodies")
 end
@@ -75,9 +76,12 @@ function move!(bodies::Vector{Body}, posis)
     posis[] = [b.posi for b in bodies]
 end
 
-function calc_f(particle, other)
+function calc_f(particle::Body, other::Body)
     G = 6.67408f-11
     r = dist(particle, other)
+    if r < particle.size/2 + other.size/2
+        r = particle.size/2 + other.size/2
+    end
     F = G * (particle.mass * other.mass) / r^2
     return F
 end
@@ -105,7 +109,7 @@ function makefig()
     screen = display(fig)
     resize!(screen, 1500, 1500)
     scatter!(ax, posis, markersize = 2000)
-    play = Button(fig[2, 1]; label = "play", tellwidth=false)
+    play = Button(fig[2, 1]; label = "play/pause", tellwidth=false)
     reset = Button(fig[2, 2]; label = "reset", tellwidth=false, color=:blue)
     configure_reset(reset)
     configure_play(play)
@@ -121,7 +125,7 @@ function configure_play(butt)
     on(butt.clicks) do clicks
         @async while isrunning[]
             move!(bodies, posis)
-            distance[][1] = dist(Body(Point(0, 0, 0), [0, 0, 0], 0), bodies[1])
+            distance[][1] = dist(Body(Point(0, 0, 0), [0, 0, 0], 0, 0), bodies[1])
             distance[] = distance[]
             push!(speed[], sum(abs.(bodies[1].velocity)))
             notify(speed)
@@ -140,7 +144,7 @@ function reset_fig!(bodies, posis, start_posis)
     posis[] = start_posis
     for (i, b) in enumerate(bodies)
         b.posi = start_posis[i]
-        b.velocity = start_velocity
+        b.velocity = start_velocities[i]
     end
 end
 
@@ -150,12 +154,6 @@ function vs()
 end
 
 
-# @async while true
-#     if dist(Body(Point(0, 0, 0), [0, 0, 0], 0), bodies[1]) == 0
-#         println("they back")
-#     end
-#     sleep(0.01)
-# end
 function distance_plot(fig)
     global distance
     ax = Axis(fig[1, 3])
