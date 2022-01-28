@@ -8,6 +8,7 @@ mutable struct Body
     velocity::Vector{Float64}
     mass::BigFloat
 end
+dist(p1, p2) = √sum((p2.posi-p1.posi) .^ 2)
 
 function gen_bodies(num, radius, avg_mass, mass_deviation, speed=0.1)
     # Generate num bodies in circular shape with velocities in direction perpendicular to circle center.
@@ -31,7 +32,7 @@ RADIUS, MASS, MASS_DEV = 3, 10e7, 0
 
 bodies = gen_bodies(2, RADIUS, MASS, MASS_DEV)
 starts = [b.posi for b in bodies]
-start_velocitiy = [0, 0, 0]
+start_velocity = [0, 0, 0]
 posis = Observable([b.posi for b in bodies])
 num_bodies = Observable(1000)
 mass = Observable(BigFloat(1))
@@ -45,9 +46,9 @@ on(num_bodies) do num
     global bodies = gen_bodies(num, RADIUS, MASS, MASS_DEV)
     global posis[] = [b.posi for b in bodies]
     global starts = posis[]
-    # for (i, b) in enumerate(bodies)
-    #     b.velocity = start_velocities[i]
-    # end
+    for (i, b) in enumerate(bodies)
+        b.velocity = start_velocity
+    end
     println("Now there are $num bodies")
 end
 
@@ -139,7 +140,7 @@ function reset_fig!(bodies, posis, start_posis)
     posis[] = start_posis
     for (i, b) in enumerate(bodies)
         b.posi = start_posis[i]
-        b.velocity = start_velocities[i]
+        b.velocity = start_velocity
     end
 end
 
@@ -148,7 +149,6 @@ function vs()
     nothing
 end
 
-dist(p1, p2) = √sum((p2.posi-p1.posi) .^ 2)
 
 # @async while true
 #     if dist(Body(Point(0, 0, 0), [0, 0, 0], 0), bodies[1]) == 0
