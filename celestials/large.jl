@@ -139,7 +139,20 @@ function step!(bodies, grids)
             end
         end
         # add a_vec to body.velocity
-        body.velocity += a_vec * dt
+        body.velocity += a_vec
         body.posi += body.velocity * dt
+
+        # update bodies grid info
+
+        # update all grids
+        return all_grids!(bodies)
+    end
+end
+
+function main(num_bodies, num_iterations)
+    bodies = gen_bodies(num_bodies)
+    grids = all_grids!(bodies)
+    for iter in 1:num_iterations
+        grids = step!(bodies, grids)
     end
 end
