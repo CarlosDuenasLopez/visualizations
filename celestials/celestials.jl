@@ -2,6 +2,7 @@ using GLMakie
 using GeometryBasics
 using LinearAlgebra:norm
 using DataStructures:CircularBuffer
+using Distributed
 
 mutable struct Body
     posi::Point

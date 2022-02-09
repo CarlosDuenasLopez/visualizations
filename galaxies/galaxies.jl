@@ -2,7 +2,7 @@ using LinearAlgebra:norm
 using GeometryBasics
 using GLMakie
 
-mutable struct Particle
+mutable struct Body
     posi::Point
     velocity::Point
     mass::BigFloat
@@ -33,7 +33,7 @@ end
 
 
 function step!(all_particles)
-    dt = 100000
+    dt = 1
     for p in all_particles
         update_velocitiy!(p, all_particles, dt)
     end
@@ -44,11 +44,11 @@ end
 
 
 function simulate(iterations)
-    sun = Particle(Point(0., 0., 0.), Point(0., 0., 0.), 1.9f30)
-    earth = Particle(Point(-15f10, 0., 0.), Point(0., 29_000, 0), 5.9f24)
-    mercury = Particle(Point(-5.7f10, 0, 0), Point(0, 47_400, 0), 0.33f24)
-    venus = Particle(Point(-10.8f10, 0, 0), Point(0, 35_000, 0), 4.87f24)
-    mars = Particle(Point(-22.7f10, 0, 0), Point(0, 24_000, 0), 0.642f24)
+    sun = Body(Point(0., 0., 0.), Point(0., 29_000., 0.), 1.9f30)
+    earth = Body(Point(-15f10, 0., 0.), Point(0., 29_000, 0), 5.9f24)
+    mercury = Body(Point(-5.7f10, 0, 0), Point(0, 47_400, 0), 0.33f24)
+    venus = Body(Point(-10.8f10, 0, 0), Point(0, 35_000, 0), 4.87f24)
+    mars = Body(Point(-22.7f10, 0, 0), Point(0, 24_000, 0), 0.642f24)
     all_parts = [sun, earth, mercury, venus, mars]
     all_posis = [[] for _ in 1:length(all_parts)]
     for i in 1:iterations
@@ -69,13 +69,14 @@ function animate(posis, frames)
     limits = (-10f11/4, 10f11/4, -10f11/4, 10f11/4, -10f11/4, 10f11/4,))
 
     start_posis = [i[1] for i in posis]
+    println(start_posis[1])
     planets = Node(start_posis)
     colors = [:yellow, :blue, :white, :red, :orange]
-    scatter!(ax, planets, color=colors, markersize=5000)
+    scatter!(ax, planets, #=color=colors,=# markersize=5000)
     tails = Vector{Node}()
     for (i, p) in enumerate(posis)
         push!(tails, Node([p[1]]))
-        lines!(ax, tails[end], color=colors[i])
+        lines!(ax, tails[end], #=color=colors[i]=#)
     end
     record(fig, "example.gif", 1:frames, framerate = 50) do frame
         for planet_idx in 1:length(posis)

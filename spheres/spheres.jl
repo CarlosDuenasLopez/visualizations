@@ -3,7 +3,7 @@ using GeometryBasics
 using Random
 using LinearAlgebra:norm
 
-mutable struct Particle
+mutable struct Body
     posi::Point
     velocity::Point
     mass::Float64
@@ -11,18 +11,18 @@ end
 
 
 function gen_particles(num_particles::Int, radius::Real)
-    particles = Vector{Particle}()
+    particles = Vector{Body}()
     for i in 1:num_particles
         point = rand(Int, 3)
         point = point ./ norm(point)
         point .*= radius
-        push!(particles, Particle(Point(point...), Point(0, 0, 0), 1))
+        push!(particles, Body(Point(point...), Point(0, 0, 0), 1))
     end
     particles
 end
 
 
-function step!(particles::Vector{Particle}, attractor::Particle, radius, dt)
+function step!(particles::Vector{Body}, attractor::Body, radius, dt)
     G = 6.674f-11
     for p in particles
         F = (G * p.mass * attractor.mass) / dist(p.posi, attractor.posi)
@@ -56,7 +56,7 @@ function random_particle(mass, radius)
     point = rand(Int, 3)
     point = point ./ norm(point)
     point .*= radius
-    Particle(Point(point...), Point(0, 0, 0), mass)
+    Body(Point(point...), Point(0, 0, 0), mass)
 end
 
 
