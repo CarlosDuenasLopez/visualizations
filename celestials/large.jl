@@ -1,9 +1,10 @@
-# using GLMakie
+using GLMakie
 using GeometryBasics
 using LinearAlgebra:norm
 using DataStructures:CircularBuffer, DefaultDict
+using Revise
 
-include("large_helper.jl")
+includet("large_helper.jl")
 
 mutable struct Body
     posi::Point
@@ -14,12 +15,18 @@ mutable struct Body
     Body(posi, velocity, mass) = new(posi, velocity, mass, Dict())
 end
 
-function determine_field(body, field_size)
-    base = collect(body.posi .÷ field_size)
-    for cord_idx in 1:length(base)
-        base[cord_idx] = (body.posi[cord_idx] > 0) ? 1 : -1
+function field1d(size::Real, cord::Real)
+    multi = cord >= 0 ? 1 : -1
+    added_cord = cord + size/2*multi
+    return added_cord ÷ size
+end
+
+function determine_field(body::Body, field_size::Real)
+    r = []
+    for posi in body.posi
+        push!(r, field1d(field_size, posi))
     end
-    base
+    r
 end
 
 Body(x::Real, y::Real) = Body(Point(x, y, 0), [0, 0, 0], 10)
@@ -49,7 +56,7 @@ dist(p1, p2) = √sum((p2-p1) .^ 2)
 
 const BOUND = 100
 const REACH = 3
-const FIELD_SIZES = [1, 5, 20, 50]
+const FIELD_SIZES = collect(1:0.1:100)
 const dt = 1
 
 
@@ -115,7 +122,7 @@ function get_all_mass_dicts(grids)
     d
 end
 
-get_raw_cords(size, field_cords) = field_cords .* size .- size/2
+get_raw_cords(size, field_cords) = field_cords .* size
 
 function step!(bodies, grids)
     mass_dicts = get_all_mass_dicts(grids)
@@ -145,8 +152,8 @@ function step!(bodies, grids)
         # update bodies grid info
 
         # update all grids
-        return all_grids!(bodies)
     end
+    return all_grids!(bodies)
 end
 
 function main(num_bodies, num_iterations)
@@ -156,3 +163,8 @@ function main(num_bodies, num_iterations)
         grids = step!(bodies, grids)
     end
 end
+
+bodies = [Body(Point(4, 0, 0), [0, 0, 0], 10e7), Body(Point(-2, 0, 0), [0, 0, 0], 10e7)]
+ag = all_grids!(bodies)
+step!(bodies, ag)
+
